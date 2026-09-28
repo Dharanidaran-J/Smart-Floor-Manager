@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart-Search Floor Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--ink:#12182b;--mut:#5b6478;--line:#e2e6ee;--brand:#2b4bd6;--brand-2:#e8edff;
+--g:#0f7a3d;--gb:#dff5e6;--r:#b42318;--rb:#fde6e3;--a:#8a5a00;--ab:#fff1cc;--k:#475067;--kb:#e6e8ee}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1220;--card:#161d31;--ink:#eef1f9;--mut:#9aa5bd;--line:#26304a;--brand:#7f98ff;--brand-2:#1e2a52;
+--g:#6ee79b;--gb:#123a24;--r:#ff9b8f;--rb:#40181a;--a:#ffd166;--ab:#3d3010;--k:#b6bed2;--kb:#252c40}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 Figtree,system-ui,sans-serif}
+h1,h2,h3{font-family:'Bricolage Grotesque',Figtree,sans-serif;margin:0;letter-spacing:-.02em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.bar{max-width:1120px;margin:auto;padding:12px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.logo{font:800 20px 'Bricolage Grotesque',sans-serif}
+.logo i{font-style:normal;color:var(--brand)}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav a{padding:7px 12px;border-radius:999px;color:var(--mut);text-decoration:none;font-weight:600}
+nav a.on,nav a:hover{background:var(--brand-2);color:var(--brand)}
+.demo{background:var(--brand-2);border-bottom:1px solid var(--line)}
+.demo .bar{padding:8px 16px;font-size:13px;color:var(--mut)}
+.demo b{color:var(--ink)}
+main{max-width:1120px;margin:auto;padding:24px 16px 64px}
+input,select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:12px;padding:11px 20px;font-weight:600;cursor:pointer}
+html:not(.x) .btn{color:#fff}
+@media(prefers-color-scheme:dark){.btn{color:#0d1220}}
+.btn.ghost{background:var(--brand-2);color:var(--brand)}
+.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.05}
+.hero p{color:var(--mut);margin:8px 0 20px;font-size:17px}
+.ai{display:flex;gap:10px;flex-wrap:wrap}
+.ai input{flex:1;min-width:240px;font-size:17px;padding:15px 18px;border-radius:14px;border:2px solid var(--brand)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;font-size:13px;font-weight:500}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+.st{background:var(--card);border-radius:16px;padding:16px 18px;border:1px solid var(--line)}
+.st b{display:block;font:800 34px 'Bricolage Grotesque',sans-serif;line-height:1.1}
+.st span{color:var(--mut);font-size:13px}
+.st.a b{color:var(--g)}.st.o b{color:var(--r)}.st.s b{color:var(--a)}
+details.fl{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin:14px 0}
+details.fl summary{cursor:pointer;font-weight:600}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:12px}
+.form label{display:grid;gap:4px;font-size:13px;color:var(--mut)}
+.form .act{display:flex;align-items:end;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.rc{text-align:left;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--k);border-radius:16px;padding:14px;cursor:pointer;box-shadow:0 1px 3px rgba(20,30,60,.06);transition:transform .15s,box-shadow .15s}
+.rc:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(20,30,60,.12)}
+.rc.available{border-left-color:var(--g)}.rc.occupied{border-left-color:var(--r)}.rc.soon{border-left-color:var(--a)}
+.rt{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.rt b{font:700 18px 'Bricolage Grotesque',sans-serif}
+.bd{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--kb);color:var(--k)}
+.bd.available{background:var(--gb);color:var(--g)}.bd.occupied{background:var(--rb);color:var(--r)}.bd.soon{background:var(--ab);color:var(--a)}
+.mt{color:var(--mut);font-size:13px}.ln{margin-top:8px;font-size:14px}
+.best{background:var(--card);border:2px solid var(--g);border-radius:20px;padding:20px;margin:14px 0}
+.best h2{font-size:28px}.best ul{margin:10px 0 0;padding-left:18px}
+.res h3{font-size:22px;margin:18px 0 6px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.tag{background:var(--brand-2);color:var(--brand);border-radius:8px;padding:2px 9px;font-size:12px;font-weight:600}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:16px;padding:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.tabs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+@media(prefers-color-scheme:dark){.tabs button.on{color:#0d1220}}
+.pg h2{font-size:30px;margin-bottom:6px}.pg>p{color:var(--mut);margin:0 0 12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--mut)}
+tr.free td:nth-child(2){color:var(--g);font-weight:600}
+.wrap{overflow-x:auto}
+dialog{border:0;border-radius:20px;padding:22px;width:min(520px,94vw);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,15,30,.55)}
+dialog h2{font-size:28px}dialog h4{margin:16px 0 6px}
+.close{float:right;background:var(--kb);border:0;border-radius:50%;width:34px;height:34px;cursor:pointer;color:var(--ink)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo">Smart-Search <i>Floor Manager</i></div>
+  <nav>
+    <a href="#dashboard">Dashboard</a><a href="#grid">Floor Grid</a><a href="#finder">AI Room Finder</a>
+    <a href="#timetable">Timetable</a><a href="#rooms">Rooms</a><a href="#about">About</a>
+  </nav></div>
+  <div class="demo"><div class="bar">
+    <span>Now: <b id="nowLbl"></b></span>
+    <label>Demo day <select id="dDay"></select></label>
+    <label>Demo time <input type="time" id="dTime" value="14:30"></label>
+    <button class="btn ghost" id="dSet">Simulate</button>
+    <button class="btn ghost" id="dReset">Use Current Time</button>
+  </div></div>
+</header>
+
+<main>
+<section class="pg" id="dashboard">
+  <div class="hero"><h1>Find the right room. Instantly.</h1>
+  <p>Ask in plain English. Every result is checked against the timetables.</p></div>
+  <div id="dashHost"></div>
+  <div class="stats" id="stats"></div>
+</section>
+
+<section class="pg" id="grid" hidden>
+  <h2>Floor Grid</h2><p>Rooms by floor, calculated from the timetables.</p>
+  <div class="tabs" id="floorTabs"></div><div id="floorView"></div>
+</section>
+
+<section class="pg" id="finder" hidden>
+  <h2>AI Room Finder</h2><p>Describe what you need, or use the filters. Both use the same availability engine.</p>
+  <div id="finderHost"></div>
+</section>
+
+<section class="pg" id="timetable" hidden>
+  <h2>Timetable</h2><p>Full day schedule for one room.</p>
+  <div class="form" style="max-width:640px">
+    <label>Day<select id="tDay"></select></label>
+    <label>Floor<select id="tFloor"></select></label>
+    <label>Room<select id="tRoom"></select></label>
+  </div>
+  <div class="wrap" style="margin-top:16px"><table id="ttTable"></table></div>
+</section>
+
+<section class="pg" id="rooms" hidden>
+  <h2>Rooms</h2><p>All rooms with live status.</p>
+  <input id="rSearch" placeholder="Search room, type, floor…" style="width:min(360px,100%);margin-bottom:12px">
+  <div class="wrap"><table id="rTable"></table></div>
+</section>
+
+<section class="pg" id="about" hidden>
+  <h2>About</h2>
+  <p>Smart-Search Floor Manager reads class timetables and works out which rooms are free right now, and for how long. Nothing about availability is hardcoded.</p>
+  <p><b>Engine:</b> <code>getRoomAvailability</code>, <code>calculateContinuousAvailability</code>, <code>filterRooms</code>, <code>findAvailableRooms</code>, <code>rankRooms</code> and <code>parseUserQuery</code> are shared by the AI search and the filters.</p>
+  <p><b>Your data:</b> edit the <code>TIMETABLES</code> and <code>ROOMS</code> constants in <code>index.html</code>. Campus hours are 8:00 AM – 6:00 PM.</p>
+</section>
+</main>
+
+<div id="fbox">
+  <div class="ai">
+    <input id="q" placeholder="Tell me what kind of room you need…" aria-label="Describe the room you need">
+    <button class="btn" id="qGo">Find Rooms</button>
+  </div>
+  <div class="chips" id="ex"></div>
+  <details class="fl" id="fdet"><summary>Traditional filters</summary>
+    <div class="form">
+      <label>Floor<select id="fF"></select></label>
+      <label>Room type<select id="fT"><option value="">All Rooms</option><option>Classroom</option><option>Lab</option><option>Seminar</option></select></label>
+      <label>AC<select id="fA"><option value="">Any</option><option value="1">AC</option><option value="0">Non-AC</option></select></label>
+      <label>Capacity<select id="fC"><option value="0">Any</option><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option></select></label>
+      <label>Date<input type="date" id="fD"></label>
+      <label>Start time<input type="time" id="fS"></label>
+      <label>End time<input type="time" id="fE"></label>
+      <label>Min. duration (min)<input type="number" id="fM" min="0" step="15" placeholder="60"></label>
+      <div class="act"><button class="btn" id="fGo">Find Rooms</button><button class="btn ghost" id="fReset">Reset</button></div>
+    </div>
+  </details>
+  <div class="res" id="res" aria-live="polite"></div>
+</div>
+
+<dialog id="dlg"></dialog>
+
+<script>
+/* ---------- DATA ---------- */
+// id, floor, capacity, ac(1/0), type
+const ROOMS_RAW="G01,0,40,1,Classroom;G02,0,60,1,Classroom;G03,0,30,0,Lab;G04,0,20,0,Seminar;G05,0,50,1,Classroom;101,1,40,1,Classroom;102,1,60,0,Classroom;103,1,30,1,Lab;104,1,20,0,Seminar;105,1,50,1,Classroom;201,2,40,0,Classroom;202,2,60,1,Classroom;203,2,30,1,Lab;204,2,30,1,Classroom;205,2,20,0,Seminar;301,3,40,1,Classroom;302,3,60,0,Classroom;303,3,30,1,Lab;304,3,20,1,Seminar;305,3,50,0,Classroom";
+// SAMPLE DATA: replace with your 10 real timetables. Line format: "<Days> HH:MM-HH:MM <Room> <Subject>/<Faculty>"  (days: Mo Tu We Th Fr Sa)
+const TIMETABLES=[
+{id:"CSE-A",lines:["MoWeFr 09:00-11:00 204 Data Science/Dr. Rao","TuTh 10:00-12:00 203 AI Lab/Dr. Das","MoWeFr 13:00-15:00 204 Machine Learning/Dr. Mehta"]},
+{id:"CSE-B",lines:["MoWeFr 09:00-10:00 202 Algorithms/Dr. Iyer","TuTh 09:00-11:00 202 Databases/Dr. Nair","MoWe 14:00-16:00 303 DBMS Lab/Dr. Nair"]},
+{id:"ECE-A",lines:["MoTuWeThFr 10:00-11:00 G01 Signals/Dr. Sen","TuTh 13:00-15:00 G03 Circuits Lab/Dr. Roy","MoWeFr 14:00-15:00 G01 VLSI/Dr. Bose"]},
+{id:"ECE-B",lines:["MoWeFr 11:00-13:00 G02 Microprocessors/Dr. Pal","TuThFr 09:00-10:00 G02 Control Systems/Dr. Jena","MoTu 15:00-17:00 G02 Comm. Systems/Dr. Sahu"]},
+{id:"MECH-A",lines:["MoTuWeThFr 09:00-10:00 101 Thermodynamics/Dr. Patra","TuTh 11:00-13:00 102 Fluid Mechanics/Dr. Kar","MoWeFr 14:00-16:00 102 CAD/Dr. Mishra"]},
+{id:"MECH-B",lines:["MoWeFr 10:00-12:00 105 Machine Design/Dr. Behera","TuTh 14:00-16:00 105 Manufacturing/Dr. Dash","Fr 09:00-12:00 103 Workshop/Dr. Dash"]},
+{id:"CIVIL-A",lines:["MoWeFr 09:00-11:00 301 Structures/Dr. Otta","TuTh 09:00-11:00 302 Surveying/Dr. Panda","MoTuWeThFr 15:00-16:00 301 Geotechnics/Dr. Otta"]},
+{id:"EEE-A",lines:["MoTuWeThFr 12:00-13:00 305 Power Systems/Dr. Lenka","MoWe 09:00-11:00 303 Machines Lab/Dr. Sethi","TuThFr 14:00-16:00 305 Electrical Drives/Dr. Sethi"]},
+{id:"MBA-A",lines:["MoWeFr 09:00-11:00 201 Marketing/Prof. Ghosh","TuTh 11:00-13:00 201 Finance/Prof. Rath","MoTuWeThFr 14:00-15:00 205 Case Study/Prof. Rath"]},
+{id:"MCA-A",lines:["MoTuWeThFr 11:00-12:00 104 Python/Dr. Jena","MoWeFr 13:00-15:00 103 Web Tech Lab/Dr. Swain","TuTh 09:00-11:00 304 Cloud Computing/Dr. Swain"]}
+];
+
+const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const CODE={Mo:1,Tu:2,We:3,Th:4,Fr:5,Sa:6};
+const FL=["Ground Floor","1st Floor","2nd Floor","3rd Floor"];
+const OPEN=480,CLOSE=1080;
+const LBL={available:"🟢 Available",occupied:"🔴 Occupied",soon:"🟡 Available Soon",closed:"⚫ Closed"};
+const ROOMS=ROOMS_RAW.split(";").map(s=>{const[id,f,c,a,t]=s.split(",");return{id,floor:+f,cap:+c,ac:a==="1",type:t,timetable:[]}});
+TIMETABLES.forEach(tt=>tt.lines.forEach(l=>{
+  const m=l.match(/^(\S+) (\d\d:\d\d)-(\d\d:\d\d) (\S+) (.+)\/(.+)$/);if(!m)return;
+  const room=ROOMS.find(r=>r.id===m[4]);if(!room)return;
+  m[1].match(/../g).forEach(d=>room.timetable.push({day:DAYS[CODE[d]],start:m[2],end:m[3],subject:m[5],faculty:m[6],section:tt.id}));
+}));
+
+/* ---------- HELPERS ---------- */
+const $=(s,e=document)=>e.querySelector(s),$$=(s,e=document)=>[...e.querySelectorAll(s)];
+const toMin=t=>{const[h,m]=t.split(":");return +h*60+ +m};
+const fmt=m=>{let h=Math.floor(m/60),ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+String(m%60).padStart(2,"0")+" "+ap};
+const dur=m=>m>=60?(Math.floor(m/60)+" h"+(m%60?" "+m%60+" min":"")):m+" min";
+let demo=null;
+const now=()=>{if(demo)return demo;const d=new Date();return{day:DAYS[d.getDay()],min:d.getHours()*60+d.getMinutes()}};
+
+/* ---------- AVAILABILITY ENGINE ---------- */
+const dayList=(r,day)=>r.timetable.filter(s=>s.day===day).sort((a,b)=>toMin(a.start)-toMin(b.start));
+
+function getRoomAvailability(r,day,min){
+  if(min<OPEN||min>=CLOSE)return{status:"closed",freeFrom:min,freeUntil:min};
+  const L=dayList(r,day);
+  const cur=L.find(s=>toMin(s.start)<=min&&min<toMin(s.end));
+  let from=min,n;
+  if(cur){from=toMin(cur.end);while((n=L.find(s=>toMin(s.start)===from)))from=toMin(n.end)}
+  const next=L.find(s=>toMin(s.start)>from);
+  const until=Math.max(next?toMin(next.start):CLOSE,from);
+  return{status:!cur?"available":(from-min<=30?"soon":"occupied"),cur,next,freeFrom:from,freeUntil:until};
+}
+
+// Is the room free for the whole [start,end) window? `until` = how long it stays free from start.
+function calculateContinuousAvailability(r,day,start,end){
+  const L=dayList(r,day);
+  const busy=L.some(s=>toMin(s.start)<=start&&start<toMin(s.end));
+  const inHours=start>=OPEN&&start<CLOSE;
+  const n=L.find(s=>toMin(s.start)>=start);
+  const until=busy||!inHours?start:(n?toMin(n.start):CLOSE);
+  return{ok:inHours&&!busy&&end<=CLOSE&&until>=end,until};
+}
+
+function filterRooms(rooms,q){
+  return rooms.filter(r=>(q.floor==null||q.near||r.floor===q.floor)&&(q.ac==null||r.ac===q.ac)&&(!q.type||r.type===q.type)&&(!q.cap||r.cap>=q.cap));
+}
+
+function rankRooms(list,q){
+  list.forEach(x=>{
+    let s=0;
+    if(q.floor!=null)s+=x.r.floor===q.floor?30:-10*Math.abs(x.r.floor-q.floor);
+    if(q.ac!=null)s+=5;if(q.type)s+=5;
+    if(q.cap)s-=((x.r.cap-q.cap)/x.r.cap)*20;            // closest capacity wins
+    s+=Math.min(x.until-q.end,240)/240*10;                 // longer spare time wins
+    x.score=s;
+  });
+  return list.sort((a,b)=>b.score-a.score);
+}
+
+function findAvailableRooms(q,rooms=ROOMS){
+  const out=[];
+  filterRooms(rooms,q).forEach(r=>{
+    const c=calculateContinuousAvailability(r,q.day,q.start,q.end);
+    if(c.ok)out.push({r,until:c.until});
+  });
+  return rankRooms(out,q);
+}
+
+// Closest alternatives when nothing matches: fewest broken requirements first
+function closestAlternatives(q){
+  const out=[];
+  ROOMS.forEach(r=>{
+    const c=calculateContinuousAvailability(r,q.day,q.start,q.start+1);
+    if(!c.ok)return;
+    const why=[];
+    if(q.floor!=null&&r.floor!==q.floor)why.push("different floor");
+    if(q.ac!=null&&r.ac!==q.ac)why.push(r.ac?"AC room":"Non-AC room");
+    if(q.type&&r.type!==q.type)why.push("type: "+r.type);
+    if(q.cap&&r.cap<q.cap)why.push("only "+r.cap+" seats");
+    if(c.until<q.end)why.push("free for "+dur(c.until-q.start));
+    out.push({r,until:c.until,why});
+  });
+  return out.sort((a,b)=>a.why.length-b.why.length||b.until-a.until).slice(0,4);
+}
+
+/* ---------- NATURAL LANGUAGE PARSER (rule-based, works offline) ---------- */
+function parseUserQuery(text){
+  const t=text.toLowerCase(),n=now();
+  const q={floor:null,near:false,ac:null,cap:null,type:null,day:n.day,start:n.min,end:null,dur:null,rangeGiven:false};
+  if(/ground|\bgf\b/.test(t))q.floor=0;
+  else{const m=t.match(/\b(1st|first|2nd|second|3rd|third)\b/)||t.match(/floor\s*(\d)/);
+    if(m){const v=m[1];q.floor={"1st":1,first:1,"2nd":2,second:2,"3rd":3,third:3}[v]??+v}}
+  q.near=/\bnear\b|close to|nearest/.test(t);
+  if(/non[- ]?ac|without ac|no ac|non air/.test(t))q.ac=false;else if(/\bac\b|air[- ]?condition/.test(t))q.ac=true;
+  const ty=t.match(/\b(lab|seminar|classroom|lecture)\b/);if(ty)q.type=ty[1]==="lab"?"Lab":ty[1]==="seminar"?"Seminar":"Classroom";
+  const cp=t.match(/(\d+)\s*(people|persons|person|students|members|pax|seats)/)||t.match(/team of (\d+)/)||t.match(/for (\d+)\b(?!\s*(hour|hr|min|h\b))/);
+  if(cp)q.cap=+cp[1];
+  const W={one:1,an:1,a:1,two:2,three:3,four:4};
+  const dm=t.match(/(half an? hour)|(\d+(?:\.\d+)?|one|an|a|two|three|four)\s*(hours?|hrs?|h\b|minutes?|mins?)/);
+  if(dm){q.dur=dm[1]?30:(()=>{const v=W[dm[2]]??parseFloat(dm[2]);return /^m/.test(dm[3])?v:v*60})()}
+  const rg=t.match(/(\d{1,2})(?::(\d\d))?\s*(am|pm)?\s*(?:to|-|till|until)\s*(\d{1,2})(?::(\d\d))?\s*(am|pm)?/);
+  if(rg&&(rg[3]||rg[6]||/from|between/.test(t))){
+    const c=(h,m,ap,fb)=>{h=+h;ap=ap||fb;if(ap==="pm"&&h<12)h+=12;if(ap==="am"&&h===12)h=0;if(!ap&&h<8)h+=12;return h*60+(+m||0)};
+    const ap2=rg[6]||rg[3];q.start=c(rg[1],rg[2],rg[3],ap2);q.end=c(rg[4],rg[5],rg[6],ap2);q.rangeGiven=true;
+  }
+  if(q.end==null)q.end=q.start+(q.dur||30);
+  return q;
+}
+
+/* ---------- RENDERING ---------- */
+function roomLine(r,a){
+  if(a.status==="closed")return"Campus closed (8 AM – 6 PM)";
+  const c=a.cur;
+  if(c)return`${c.subject} · ${c.faculty}<br>Available ${fmt(a.freeFrom)} – ${fmt(a.freeUntil)}`;
+  return`Available now – ${fmt(a.freeUntil)}${a.next?`<br>Next: ${a.next.subject}`:""}`;
+}
+function card(r,a){
+  return`<button class="rc ${a.status}" data-id="${r.id}"><div class="rt"><b>Room ${r.id}</b><span class="bd ${a.status}">${LBL[a.status]}</span></div>
+  <div class="mt">${FL[r.floor]} · ${r.ac?"AC":"Non-AC"} · ${r.cap} seats · ${r.type}</div><div class="ln">${roomLine(r,a)}</div></button>`;
+}
+const stat=r=>getRoomAvailability(r,now().day,now().min);
+
+function paintStats(){
+  const c={available:0,occupied:0,soon:0,closed:0};ROOMS.forEach(r=>c[stat(r).status]++);
+  $("#stats").innerHTML=[["a","Available Now",c.available],["o","Occupied",c.occupied+c.closed],["s","Available Soon",c.soon],["","Total Rooms",ROOMS.length]]
+    .map(([k,l,v])=>`<div class="st ${k}"><b>${v}</b><span>${l}</span></div>`).join("");
+  $("#nowLbl").textContent=`${now().day}, ${fmt(now().min)}${demo?" (demo)":""}`;
+}
+
+let floorSel=0;
+function paintGrid(){
+  $("#floorTabs").innerHTML=FL.map((f,i)=>`<button class="${i===floorSel?"on":""}" data-fl="${i}">${f}</button>`).join("");
+  const rs=ROOMS.filter(r=>r.floor===floorSel).map(r=>({r,a:stat(r)}));
+  const free=rs.filter(x=>x.a.status==="available"||x.a.status==="soon"),occ=rs.filter(x=>x.a.status==="occupied"||x.a.status==="closed");
+  const sec=(t,l)=>`<h3 style="margin:18px 0 10px">${t} (${l.length})</h3><div class="grid">${l.map(x=>card(x.r,x.a)).join("")||'<p class="mt">None right now.</p>'}</div>`;
+  $("#floorView").innerHTML=sec("Available rooms",free)+sec("Occupied rooms",occ);
+}
+
+function paintRooms(){
+  const s=$("#rSearch").value.toLowerCase();
+  $("#rTable").innerHTML="<tr><th>Room</th><th>Status</th><th>Floor</th><th>Type</th><th>AC</th><th>Seats</th></tr>"+
+  ROOMS.filter(r=>`${r.id} ${r.type} ${FL[r.floor]} ${r.ac?"ac":"non-ac"}`.toLowerCase().includes(s)).map(r=>{const a=stat(r);
+    return`<tr class="${a.status==="available"?"free":""}" data-id="${r.id}" style="cursor:pointer"><td><b>${r.id}</b></td><td>${LBL[a.status]}</td><td>${FL[r.floor]}</td><td>${r.type}</td><td>${r.ac?"Yes":"No"}</td><td>${r.cap}</td></tr>`}).join("");
+}
+
+function segs(r,day){
+  const out=[];let t=OPEN;
+  dayList(r,day).forEach(s=>{const a=toMin(s.start),b=toMin(s.end);if(a>t)out.push({a:t,b:a});out.push({s,a,b});t=Math.max(t,b)});
+  if(t<CLOSE)out.push({a:t,b:CLOSE});return out;
+}
+function paintTT(){
+  const r=ROOMS.find(x=>x.id===$("#tRoom").value)||ROOMS[0];
+  $("#ttTable").innerHTML=`<tr><th>Time</th><th>Room ${r.id}</th></tr>`+segs(r,$("#tDay").value).map(x=>
+    `<tr class="${x.s?"":"free"}"><td>${fmt(x.a)} – ${fmt(x.b)}</td><td>${x.s?`${x.s.subject} <span class="mt">· ${x.s.faculty} · ${x.s.section}</span>`:"FREE"}</td></tr>`).join("");
+}
+
+function openRoom(id){
+  const r=ROOMS.find(x=>x.id===id),n=now(),a=getRoomAvailability(r,n.day,n.min);
+  const free=segs(r,n.day).filter(x=>!x.s&&x.b>n.min);
+  $("#dlg").innerHTML=`<button class="close" onclick="dlg.close()" aria-label="Close">✕</button>
+  <h2>Room ${r.id}</h2><p><span class="bd ${a.status}">${LBL[a.status]}</span></p>
+  <p class="mt">Floor: ${FL[r.floor]}<br>Capacity: ${r.cap}<br>AC: ${r.ac?"Yes":"No"} · Type: ${r.type}</p>
+  ${a.cur?`<h4>Current class</h4><p>${a.cur.subject}<br><span class="mt">${a.cur.faculty} · ${a.cur.section} · ${a.cur.start}–${a.cur.end}</span></p>`:""}
+  <h4>${a.cur?"Free from":"Available now"}</h4><p>${a.status==="closed"?"Campus closed":fmt(a.freeFrom)+" – "+fmt(a.freeUntil)}</p>
+  <h4>Next class</h4><p>${a.next?`${fmt(toMin(a.next.start))} – ${fmt(toMin(a.next.end))}<br>Subject: ${a.next.subject}`:"No more classes today"}</p>
+  <h4>Free slots today</h4><p>${free.map(x=>fmt(Math.max(x.a,n.min))+" – "+fmt(x.b)).join("<br>")||"None"}</p>
+  <h4>${n.day}'s timetable</h4><table>${segs(r,n.day).map(x=>`<tr><td>${fmt(x.a)}–${fmt(x.b)}</td><td>${x.s?x.s.subject:"Free"}</td></tr>`).join("")}</table>`;
+  $("#dlg").showModal();
+}
+
+/* ---------- SEARCH / RESULTS ---------- */
+let lastRun=null;
+function tagsFor(q){
+  const t=[];if(q.floor!=null)t.push((q.near?"Near ":"")+FL[q.floor]);if(q.ac!=null)t.push(q.ac?"AC":"Non-AC");if(q.type)t.push(q.type);
+  if(q.cap)t.push(q.cap+"+ people");t.push(`${q.day} ${fmt(q.start)} – ${fmt(q.end)}`);return t.map(x=>`<span class="tag">${x}</span>`).join("");
+}
+function run(q){
+  lastRun=q;const list=findAvailableRooms(q);
+  const box=$("#res");
+  if(!list.length){
+    const alts=closestAlternatives(q);
+    box.innerHTML=`<h3>No rooms match your requirements.</h3><div class="tags">${tagsFor(q)}</div>
+    <div class="empty"><b>Try:</b><ul><li>Reducing the required duration</li><li>Selecting another floor</li><li>Removing the AC requirement</li><li>Choosing a smaller capacity</li></ul></div>
+    ${alts.length?`<h3>Closest alternatives</h3><div class="grid">${alts.map(x=>`<button class="rc available" data-id="${x.r.id}"><div class="rt"><b>Room ${x.r.id}</b><span class="bd available">Free ${dur(x.until-q.start)}</span></div><div class="mt">${FL[x.r.floor]} · ${x.r.ac?"AC":"Non-AC"} · ${x.r.cap} seats</div><div class="ln">Doesn't fully match: ${x.why.join(", ")||"n/a"}</div></button>`).join("")}</div>`:""}`;
+    return;
+  }
+  const [b,...rest]=list;
+  box.innerHTML=`<h3>${list.length} room${list.length>1?"s":""} match${list.length>1?"":"es"} your requirements</h3><div class="tags">${tagsFor(q)}</div>
+  <div class="best"><span class="bd available">Recommended · 🟢 Available</span><h2 style="margin-top:8px">Room ${b.r.id}</h2>
+  <ul><li>Floor: ${FL[b.r.floor]}</li><li>Type: ${b.r.ac?"AC":"Non-AC"} ${b.r.type}</li><li>Capacity: ${b.r.cap}</li>
+  <li>Available: ${fmt(q.start)} – ${fmt(b.until)}</li><li>Your requested duration: ${fmt(q.start)} – ${fmt(q.end)}</li></ul>
+  <button class="btn ghost" style="margin-top:12px" data-id="${b.r.id}">View room details</button></div>
+  ${rest.length?`<h3>Other matches</h3><div class="grid">${rest.map(x=>`<button class="rc available" data-id="${x.r.id}"><div class="rt"><b>Room ${x.r.id}</b><span class="bd available">🟢 Available</span></div><div class="mt">${FL[x.r.floor]} · ${x.r.ac?"AC":"Non-AC"} · ${x.r.cap} seats · ${x.r.type}</div><div class="ln">Available: ${fmt(q.start)} – ${fmt(x.until)}</div></button>`).join("")}</div>`:""}`;
+}
+function runAI(){const v=$("#q").value.trim();if(v)run(parseUserQuery(v))}
+function runFilters(){
+  const n=now(),s=$("#fS").value?toMin($("#fS").value):n.min,m=+$("#fM").value||0;
+  let e=$("#fE").value?toMin($("#fE").value):s+(m||30);e=Math.max(e,s+m);if(e<=s)e=s+30;
+  const d=$("#fD").value;
+  run({floor:$("#fF").value===""?null:+$("#fF").value,near:false,ac:$("#fA").value===""?null:$("#fA").value==="1",type:$("#fT").value||null,
+    cap:+$("#fC").value||null,day:d?DAYS[new Date(d+"T00:00").getDay()]:n.day,start:s,end:e});
+}
+
+/* ---------- WIRING ---------- */
+function paint(){paintStats();paintGrid();paintRooms();paintTT();if(lastRun)run(lastRun)}
+function route(){
+  const p=(location.hash||"#dashboard").slice(1);
+  $$(".pg").forEach(x=>x.hidden=x.id!==p);$$("nav a").forEach(a=>a.classList.toggle("on",a.hash==="#"+p));
+  if(p==="dashboard")$("#dashHost").append($("#fbox"));if(p==="finder"){$("#finderHost").append($("#fbox"));$("#fdet").open=true}
+  paint();
+}
+const opts=(a,f)=>a.map((x,i)=>f(x,i)).join("");
+$("#dDay").innerHTML=$("#tDay").innerHTML=opts(DAYS,d=>`<option>${d}</option>`);
+$("#fF").innerHTML='<option value="">All Floors</option>'+opts(FL,(f,i)=>`<option value="${i}">${f}</option>`);
+$("#tFloor").innerHTML=opts(FL,(f,i)=>`<option value="${i}">${f}</option>`);
+function fillRooms(){$("#tRoom").innerHTML=ROOMS.filter(r=>r.floor===+$("#tFloor").value).map(r=>`<option>${r.id}</option>`).join("")}
+fillRooms();
+$("#tDay").value=DAYS[Math.min(Math.max(new Date().getDay(),1),5)];
+$("#ex").innerHTML=["Find an AC room for 2 hours","Find a room for 20 people","Find a free room on the ground floor","Find a room available from 2 PM to 4 PM"].map(x=>`<button class="chip">${x}</button>`).join("");
+
+document.addEventListener("click",e=>{
+  const c=e.target.closest(".chip");if(c){$("#q").value=c.textContent;runAI();return}
+  const f=e.target.closest("[data-fl]");if(f){floorSel=+f.dataset.fl;paintGrid();return}
+  const r=e.target.closest("[data-id]");if(r)openRoom(r.dataset.id);
+});
+$("#qGo").onclick=runAI;$("#q").onkeydown=e=>{if(e.key==="Enter")runAI()};
+$("#fGo").onclick=runFilters;
+$("#fReset").onclick=()=>{$$("#fdet select,#fdet input").forEach(x=>x.value=x.tagName==="SELECT"?x.options[0].value:"");lastRun=null;$("#res").innerHTML=""};
+$("#dSet").onclick=()=>{demo={day:$("#dDay").value,min:toMin($("#dTime").value||"14:30")};paint()};
+$("#dReset").onclick=()=>{demo=null;paint()};
+$("#dDay").value=DAYS[Math.min(Math.max(new Date().getDay(),1),5)];
+$("#tFloor").onchange=()=>{fillRooms();paintTT()};$("#tDay").onchange=$("#tRoom").onchange=paintTT;
+$("#rSearch").oninput=paintRooms;
+window.addEventListener("hashchange",route);
+setInterval(()=>{if(!demo)paint()},30000);
+route();
+</script>
+</body>
+</html>
